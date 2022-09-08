@@ -1,0 +1,19 @@
+
+# codegen options: https://doc.rust-lang.org/rustc/codegen-options/index.html#debuginfo
+
+# cargo build --release would build release
+# cargo build would build debug
+# Also refer -C debuginfo flag below for debug info (0- no debug info, 2- full debug)
+
+[build]
+target = "riscv32imac-unknown-none-elf"
+
+# Flags
+#  - custom linker script
+#  - align power of 2
+
+rustflags = [
+   "-C", "link-arg=-Thifive1-revb.lscript",
+   "-C", "llvm-args=-align-all-functions=2",
+   "-C", "debuginfo=0"
+]
