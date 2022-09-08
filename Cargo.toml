@@ -2,6 +2,8 @@
 name = "rust-on-rv32i"
 version = "0.0.1"
 edition = "2021"
+description = "Bare metal port of rust on rv32i target"
+license-file = "LICENSE.txt"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
