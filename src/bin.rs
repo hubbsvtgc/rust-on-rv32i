@@ -1,6 +1,10 @@
 #![no_std]
 #![no_main]
 
+extern crate hifive1_revb_board;
+
+use hifive1_revb_board::GpioMmapRegs;
+
 use core::panic::PanicInfo;
 use core::arch::asm;
 
@@ -17,6 +21,8 @@ fn panic(_info: &PanicInfo) -> ! {
 
 #[no_mangle]
 pub fn _start() -> ! {
+
+    let gpio_cfg  = 0x1001_2000 as *mut GpioMmapRegs;
 
     extern "C" {
         static  _stack_start: u32;
