@@ -50,7 +50,7 @@ SECTIONS
 {
     .mtvec_base : /* start address is 0x80000000 */
     {
-         KEEP(*(.mtvec_base))
+         KEEP(*(.entry))
     }
     > ram
     . = ALIGN(4);
