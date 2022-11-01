@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
 
-extern crate fe310_02;
+use fe310_02::{gpio};
 use core::panic::PanicInfo;
 use core::arch::asm;
 
@@ -69,12 +69,12 @@ pub extern "C" fn _start() -> ! {
     set_trap_handler();
     clear_external_interrupt();
 
-    fe310_02::Pin::set_as_out(BLUE_LED_GPIO);
+    gpio::Pin::set_as_out(BLUE_LED_GPIO);
 
     loop {
 
         // set high 1 - already pulleup so blue led on
-        fe310_02::Pin::set_low(BLUE_LED_GPIO);
+        gpio::Pin::set_low(BLUE_LED_GPIO);
 
         let mut  delay:  u32 = 0xfffff;
 
@@ -84,7 +84,7 @@ pub extern "C" fn _start() -> ! {
         } 
         
         // set high 1 - blue led off (since pulledup) 
-        fe310_02::Pin::set_high(BLUE_LED_GPIO);
+        gpio::Pin::set_high(BLUE_LED_GPIO);
 
         delay = 0xfffff;
 
