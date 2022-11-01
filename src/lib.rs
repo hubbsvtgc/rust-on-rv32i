@@ -15,7 +15,7 @@ pub enum Func {
     Iof,
 }
 
-pub struct GpioPin;
+pub struct Pin;
 
 #[repr(C)]
  struct GpioMmapRegs{
@@ -38,7 +38,7 @@ pub struct GpioPin;
     pthru_low_en: u32,
 }
 
-fn num2hexbit (num: u8) -> u32{
+fn generate_mask (num: u8) -> u32{
     if num == 0 {
         return 1
     }else {
@@ -46,89 +46,68 @@ fn num2hexbit (num: u8) -> u32{
     }
 }
 
- impl GpioPin {
+ impl Pin {
     #[no_mangle]
-    pub fn configure_as_in(p: u8) {
+    pub fn set_as_in(p: u8) {
         unsafe {
-            let mut v: u32;
+            let v: u32;
             let t = 0x1001_2000 as *mut GpioMmapRegs;
-            v = (*t).iput_async_en;
-        
-            v = v | num2hexbit(p);
+            v = (*t).iput_async_en | generate_mask(p) ;
             (*t).iput_async_en = v;
         }
     }
     #[no_mangle]
-    pub fn configure_as_out(p: u8) {
+    pub fn set_as_out(p: u8) {
         unsafe {
             let mut v: u32;
             let t = 0x1001_2000 as *mut GpioMmapRegs;
             v = (*t).oput_en;
         
-            v = v | num2hexbit(p);
+            v = v | generate_mask(p);
             (*t).oput_en = v;
         }
     }
     #[no_mangle]
-    pub fn configure_as_io(p: u8) {
+    pub fn set_as_gpio(p: u8) {
         unsafe {
-            let mut v: u32;
             let t = 0x1001_2000 as *mut GpioMmapRegs;
-            v = (*t).iof_en;
-        
-            v = v | num2hexbit(p);
+            let v: u32 = (*t).iof_en & (!generate_mask(p));
+            (*t).iof_en = v;
+        }
+    }
+    #[no_mangle]
+    pub fn set_as_io(p: u8) {
+        unsafe {
+            let t = 0x1001_2000 as *mut GpioMmapRegs;
+            let v: u32 = (*t).iof_en  | generate_mask(p);
             (*t).iof_en = v;
         }
     }
     #[no_mangle]
     pub fn select_iof(p: u8) {
         unsafe {
-            let mut v: u32;
             let t = 0x1001_2000 as *mut GpioMmapRegs;
-            v = (*t).iof_sel;
-        
-            v = v | num2hexbit(p);
+            let v: u32 = (*t).iof_sel | generate_mask(p);
             (*t).iof_sel = v;
         }
     }
     #[no_mangle]
-    pub fn write_high(p: u8) {
+    pub fn set_high(p: u8) {
         unsafe {
-            let mut v: u32;
+            let v: u32;
             let t = 0x1001_2000 as *mut GpioMmapRegs;
-            v = (*t).oput_val;
-        
-            v = v | num2hexbit(p);
+            v = (*t).oput_val | generate_mask(p);
             (*t).oput_val = v;
         }
     }
     #[no_mangle]
-    pub fn write_low(p: u8) {
+    pub fn set_low(p: u8) {
+        /* reg value = reg value & ( !mask) */
         unsafe {
-            let mut v: u32;
+            let v: u32;
             let t = 0x1001_2000 as *mut GpioMmapRegs;
-            v = (*t).oput_val;
-            (*t).oput_val = 0;
-        
-            /* v = (*t).oput_val;
-            v = v | num2hexbit(p);
-            (*t).oput_val = v & !num2hexbit(p);
-            
-            80000080 <write_low>:
-80000080:	100125b7          	lui	a1,0x10012
-80000084:	45d0                	lw	a2,12(a1)
-80000086:	0ff57713          	zext.b	a4,a0
-8000008a:	56f9                	li	a3,-2
-8000008c:	c711                	beqz	a4,80000098 <write_low+0x18>
-8000008e:	4685                	li	a3,1
-80000090:	00a69533          	sll	a0,a3,a0
-80000094:	fff54693          	not	a3,a0
-80000098:	00d67533          	and	a0,a2,a3
-8000009c:	c5c8                	sw	a0,12(a1)
-8000009e:	8082                	ret
-
-*/
+            v = (*t).oput_val & (!generate_mask(p));
+            (*t).oput_val = v;
         }
     }
-
  }
