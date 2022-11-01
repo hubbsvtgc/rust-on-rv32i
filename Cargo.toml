@@ -12,7 +12,7 @@ repository = "https://github.com/hubbsvtgc/rust-on-rv32i"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "hifive1_revb_board"
+name = "fe310_02"
 path = "src/lib.rs"
 
 [[bin]]

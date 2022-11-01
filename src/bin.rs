@@ -1,7 +1,7 @@
 #![no_std]
 #![no_main]
 
-extern crate hifive1_revb_board;
+extern crate fe310_02;
 use core::panic::PanicInfo;
 use core::arch::asm;
 
@@ -26,19 +26,8 @@ fn panic(_info: &PanicInfo) -> ! {
         asm!("lw t1, 0(t0)");
         asm!("sw t1, 0(t0)");
         asm!("mret");
+        /* TBD: More to do */
     }
-
-/*
-    li t0, PLIC_BASE;
-li t1, PLIC_CLAIMCOMP_CTX1_OFFSET;
-add t0, t1, t0;
-
-lw t1, 0(t0);
-sw t1, 0(t0);
-slli t1, t1, 2;
-*/
-
-    //loop{}
 }
 
 fn set_stack(){
@@ -80,12 +69,12 @@ pub extern "C" fn _start() -> ! {
     set_trap_handler();
     clear_external_interrupt();
 
-    hifive1_revb_board::Pin::set_as_out(BLUE_LED_GPIO);
+    fe310_02::Pin::set_as_out(BLUE_LED_GPIO);
 
     loop {
 
         // set high 1 - already pulleup so blue led on
-        hifive1_revb_board::Pin::set_low(BLUE_LED_GPIO);
+        fe310_02::Pin::set_low(BLUE_LED_GPIO);
 
         let mut  delay:  u32 = 0xfffff;
 
@@ -95,7 +84,7 @@ pub extern "C" fn _start() -> ! {
         } 
         
         // set high 1 - blue led off (since pulledup) 
-        hifive1_revb_board::Pin::set_high(BLUE_LED_GPIO);
+        fe310_02::Pin::set_high(BLUE_LED_GPIO);
 
         delay = 0xfffff;
 

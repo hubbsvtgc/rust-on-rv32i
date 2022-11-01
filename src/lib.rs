@@ -5,16 +5,6 @@
 //! interface for using peripherals in board.
 #![no_std]
 
-pub enum Dir {
-    In,
-    Out,
-}
-
-pub enum Func {
-    Gpio,
-    Iof,
-}
-
 pub struct Pin;
 
 #[repr(C)]
