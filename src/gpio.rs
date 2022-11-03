@@ -3,7 +3,10 @@
 //!
 //! The Gpio HAL module provides the essential
 //! interface for using gpio.
+<<<<<<< HEAD
 #![no_std]
+=======
+>>>>>>> rdev
 
 pub struct Pin;
 
