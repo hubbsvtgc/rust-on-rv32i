@@ -1,10 +1,9 @@
 
-//! # Gpio HAL 
+//! # Hifive1-RevB board Library
 //!
-//! The Gpio HAL module provides the essential
-//! interface for using gpio.
+//! The Hifive1-RevB board Library provides the essential
+//! interface for using peripherals in board.
 
-pub struct Pin;
 
 #[repr(C)]
  struct GpioMmapRegs{
@@ -27,6 +26,8 @@ pub struct Pin;
     pthru_low_en: u32,
 }
 
+pub struct Gpio(*mut GpioMmapRegs);
+
 fn generate_mask (num: u8) -> u32{
     if num == 0 {
         return 1
@@ -35,68 +36,44 @@ fn generate_mask (num: u8) -> u32{
     }
 }
 
- impl Pin {
-    #[no_mangle]
-    pub fn set_as_in(p: u8) {
+ impl Gpio {
+    
+    pub fn init() -> Self {
+        Self(0x1001_2000 as *mut GpioMmapRegs)
+    }
+
+    pub fn configure_as_in(&self, p: u8) {
         unsafe {
-            let v: u32;
-            let t = 0x1001_2000 as *mut GpioMmapRegs;
-            v = (*t).iput_async_en | generate_mask(p) ;
-            (*t).iput_async_en = v;
+            let  v: u32 = (*self.0).iput_async_en | generate_mask(p);
+            (*self.0).iput_async_en = v;
         }
     }
-    #[no_mangle]
-    pub fn set_as_out(p: u8) {
+
+    pub fn configure_as_out(&self, p: u8) {
         unsafe {
-            let mut v: u32;
-            let t = 0x1001_2000 as *mut GpioMmapRegs;
-            v = (*t).oput_en;
-        
-            v = v | generate_mask(p);
-            (*t).oput_en = v;
+            let  v: u32 =  (*self.0).oput_en | generate_mask(p);
+            (*self.0).oput_en = v;
         }
     }
-    #[no_mangle]
-    pub fn set_as_gpio(p: u8) {
+ 
+    pub fn configure_as_io(&self, p: u8) {
         unsafe {
-            let t = 0x1001_2000 as *mut GpioMmapRegs;
-            let v: u32 = (*t).iof_en & (!generate_mask(p));
-            (*t).iof_en = v;
+            let v: u32 = (*self.0).iof_en | generate_mask(p);
+            (*self.0).iof_en  = v;
         }
     }
-    #[no_mangle]
-    pub fn set_as_io(p: u8) {
+
+    pub fn write_high(&self, p: u8) {
         unsafe {
-            let t = 0x1001_2000 as *mut GpioMmapRegs;
-            let v: u32 = (*t).iof_en  | generate_mask(p);
-            (*t).iof_en = v;
+            let v: u32 =  (*self.0).oput_val | generate_mask(p);
+            (*self.0).oput_val = v;
         }
     }
-    #[no_mangle]
-    pub fn select_iof(p: u8) {
+  
+    pub fn write_low(&self, p: u8) { /* 3rd gpio pin, bit pos 2 => mask ...100 => ...11011 */
         unsafe {
-            let t = 0x1001_2000 as *mut GpioMmapRegs;
-            let v: u32 = (*t).iof_sel | generate_mask(p);
-            (*t).iof_sel = v;
-        }
-    }
-    #[no_mangle]
-    pub fn set_high(p: u8) {
-        unsafe {
-            let v: u32;
-            let t = 0x1001_2000 as *mut GpioMmapRegs;
-            v = (*t).oput_val | generate_mask(p);
-            (*t).oput_val = v;
-        }
-    }
-    #[no_mangle]
-    pub fn set_low(p: u8) {
-        /* reg value = reg value & ( !mask) */
-        unsafe {
-            let v: u32;
-            let t = 0x1001_2000 as *mut GpioMmapRegs;
-            v = (*t).oput_val & (!generate_mask(p));
-            (*t).oput_val = v;
+            let  v: u32 = (*self.0).oput_val & (! generate_mask(p)) ;
+            (*self.0).oput_val = v;
         }
     }
  }

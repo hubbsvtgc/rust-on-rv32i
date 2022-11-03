@@ -1,7 +1,8 @@
 #![no_std]
 #![no_main]
 
-use fe310_02::{gpio};
+//extern crate hifive1_revb_board;
+use fe310::gpio;
 use core::panic::PanicInfo;
 use core::arch::asm;
 
@@ -26,7 +27,6 @@ fn panic(_info: &PanicInfo) -> ! {
         asm!("lw t1, 0(t0)");
         asm!("sw t1, 0(t0)");
         asm!("mret");
-        /* TBD: More to do */
     }
 }
 
@@ -69,12 +69,16 @@ pub extern "C" fn _start() -> ! {
     set_trap_handler();
     clear_external_interrupt();
 
-    gpio::Pin::set_as_out(BLUE_LED_GPIO);
+    let gpio = gpio::Gpio::init();
+
+    gpio.configure_as_out(BLUE_LED_GPIO);
+
+    //Gconfigure_as_out(BLUE_LED_GPIO);
 
     loop {
 
         // set high 1 - already pulleup so blue led on
-        gpio::Pin::set_low(BLUE_LED_GPIO);
+        gpio.write_low(BLUE_LED_GPIO);
 
         let mut  delay:  u32 = 0xfffff;
 
@@ -84,7 +88,7 @@ pub extern "C" fn _start() -> ! {
         } 
         
         // set high 1 - blue led off (since pulledup) 
-        gpio::Pin::set_high(BLUE_LED_GPIO);
+        gpio.write_high(BLUE_LED_GPIO);
 
         delay = 0xfffff;
 
