@@ -3,6 +3,7 @@
 
 //extern crate hifive1_revb_board;
 use fe310::gpio;
+
 use core::panic::PanicInfo;
 use core::arch::asm;
 
@@ -17,9 +18,7 @@ fn panic(_info: &PanicInfo) -> ! {
 }
 
 #[no_mangle]
-
  fn trap_handler() {
-
     unsafe{
         asm!("mv t0, {}", in(reg) PLIC_BASE);
         asm!("mv t1, {}", in(reg) PLIC_CLAIMCOMP_CTX1_OFFSET);
@@ -61,39 +60,34 @@ fn clear_external_interrupt()
 }
 
 #[no_mangle]
-
-#[link_section = ".entry"]
+//#[link_section = ".entry"]
 pub extern "C" fn _start() -> ! {
 
     set_stack();
     set_trap_handler();
     clear_external_interrupt();
 
+    /* GPIO Functionality Test */
     let gpio = gpio::Gpio::init();
-
     gpio.configure_as_out(BLUE_LED_GPIO);
-
-    //Gconfigure_as_out(BLUE_LED_GPIO);
-
     loop {
 
         // set high 1 - already pulleup so blue led on
         gpio.write_low(BLUE_LED_GPIO);
 
         let mut  delay:  u32 = 0xfffff;
-
         /* delay */
         while delay > 0 {
             delay -=  1
         } 
-        
+
         // set high 1 - blue led off (since pulledup) 
         gpio.write_high(BLUE_LED_GPIO);
 
         delay = 0xfffff;
-
         while delay > 0 {
             delay  -=  1
         }
     }
-}
+
+    }

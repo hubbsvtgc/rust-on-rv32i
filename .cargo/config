@@ -11,10 +11,12 @@ target = "riscv32imac-unknown-none-elf"
 # Flags
 #  - custom linker script
 #  - align power of 2
+#  - debuginfo=0 (no debug info)
+#  - debuginfo=2 ( with debug info like -g flag)
 
 rustflags = [
    "-C", "link-arg=-Thifive1-revb.lscript",
    "-C", "llvm-args=-align-all-functions=2",
-   "-C", "debuginfo=0",
+   "-C", "debuginfo=2",
    "-C", "opt-level=0"
 ]

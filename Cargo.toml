@@ -16,7 +16,16 @@ name = "fe310"
 path = "src/lib.rs"
 
 [[bin]]
-name = "rustic-wires"
-path = "src/bin.rs"
+name = "led-blink"
+path = "src/bin/led-blink.rs"
+
+[[bin]]
+name = "uart1-loopback"
+path = "src/bin/uart1-loopback.rs"
 
 [dependencies]
+
+[features]
+default = ["uart", "gpio"]
+uart = []
+gpio = []
