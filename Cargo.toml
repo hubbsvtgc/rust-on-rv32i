@@ -1,6 +1,6 @@
 [package]
 name = "rust-on-rv32i"
-version = "0.0.11"
+version = "0.0.13"
 edition = "2021"
 description = "Bare metal port of rust on rv32i target"
 license-file = "LICENSE.txt"
