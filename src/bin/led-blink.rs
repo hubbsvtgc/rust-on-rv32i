@@ -1,13 +1,12 @@
 #![no_std]
 #![no_main]
 
-//extern crate hifive1_revb_board;
-use fe310::gpio;
+#[path = "../lib/dio.rs"] mod dio;
 
 use core::panic::PanicInfo;
 use core::arch::asm;
 
-const BLUE_LED_GPIO: u8 = 21;
+//const BLUE_LED_GPIO: dio::DioPinNum = 21;
 const PLIC_BASE: u32 = 0xC000000; // 0xC00 << 16 = 0xC00 0000,  
 const PLIC_CLAIMCOMP_CTX1_OFFSET: u32 = 0x200004;
 const MIE_SET: u32 = 0;
@@ -59,6 +58,15 @@ fn clear_external_interrupt()
     }
 }
 
+fn delay(v: u32)
+{
+    let mut  d = v;
+    /* delay */
+    while d > 0 {
+        d -=  1
+    } 
+}
+
 #[no_mangle]
 //#[link_section = ".entry"]
 pub extern "C" fn _start() -> ! {
@@ -67,27 +75,22 @@ pub extern "C" fn _start() -> ! {
     set_trap_handler();
     clear_external_interrupt();
 
-    /* GPIO Functionality Test */
-    let gpio = gpio::Gpio::init();
-    gpio.configure_as_out(BLUE_LED_GPIO);
-    loop {
+    let p = dio::DioPin {instance: 0, port: 0, pin_num: 21};
+    let mode = dio::DioFuncMode::Gpio;
 
-        // set high 1 - already pulleup so blue led on
-        gpio.write_low(BLUE_LED_GPIO);
+    p.setup_pin();
+    p.enable_pin_outlet();
+    p.set_pin_func_mode(&mode);
 
-        let mut  delay:  u32 = 0xfffff;
-        /* delay */
-        while delay > 0 {
-            delay -=  1
-        } 
+    loop{
 
-        // set high 1 - blue led off (since pulledup) 
-        gpio.write_high(BLUE_LED_GPIO);
+        p.set_pin_outlet_high();
 
-        delay = 0xfffff;
-        while delay > 0 {
-            delay  -=  1
-        }
-    }
+        delay(0xfffff);
+
+        p.set_pin_outlet_low();
+
+        delay(0xfffff);
 
     }
+}

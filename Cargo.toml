@@ -12,20 +12,20 @@ repository = "https://github.com/hubbsvtgc/rust-on-rv32i"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "fe310"
-path = "src/lib.rs"
+name = "hal"
+path = "src/lib/lib.rs"
 
 [[bin]]
 name = "led-blink"
 path = "src/bin/led-blink.rs"
 
-[[bin]]
-name = "uart1-loopback"
-path = "src/bin/uart1-loopback.rs"
+#[[bin]]
+#name = "uart1-loopback"
+#path = "src/bin/uart1-loopback.rs"
 
 [dependencies]
 
 [features]
-default = ["uart", "gpio"]
+default = ["dio"]
 uart = []
-gpio = []
+dio = []

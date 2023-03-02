@@ -5,8 +5,11 @@
 //! interface for using peripherals in board.
 
 #![no_std]
-#[cfg(feature = "gpio")]
-pub mod gpio;
+#[cfg(feature = "dio")]
+pub mod dio;
 
 #[cfg(feature = "uart")]
 pub mod uart;
+
+#[cfg(feature = "fe310")]
+pub mod fe310;
