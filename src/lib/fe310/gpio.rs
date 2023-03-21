@@ -1,8 +1,5 @@
-//! # Hifive1-RevB board Library
+//!  Hifive1-RevB board Gpio Interface
 //!
-//! The Hifive1-RevB board Library provides the essential
-//! interface for using peripherals in board.
-
 
 #[repr(C)]
  struct GpioMmapRegs{
@@ -16,6 +13,8 @@
     rise_ip: u32, /* Rise intr pending */
     fall_ie: u32, /* Fall intr enable */
     fall_ip: u32, /* Fall intr pending */
+    high_ie: u32, /* Fall intr enable */
+    high_ip: u32, /* Fall intr pending */
     low_ie: u32,
     low_ip: u32,
     iof_en: u32,
@@ -25,7 +24,7 @@
     pthru_low_en: u32,
 }
 
-const GPIO: *mut GpioMmapRegs = 0x1001_2000 as *mut GpioMmapRegs;
+const GPIO: *mut GpioMmapRegs = 0x1001_2000 as *mut GpioMmapRegs; // private to this file 
 
 fn generate_mask (num: u8) -> u32{
     if num == 0 {
@@ -34,39 +33,50 @@ fn generate_mask (num: u8) -> u32{
         return 1 << num
     }
 }
-    pub (crate) fn enable_inlet( p: u8) {
-        unsafe {
-            (*GPIO).iput_async_en = (*GPIO).iput_async_en | generate_mask(p);
-        }
-    }
 
-    pub (crate) fn enable_outlet(p: u8) {
-        unsafe {
-            (*GPIO).oput_en  = (*GPIO).oput_en | generate_mask(p);
-        }
+pub (crate) fn enable_inlet( p: u8) {
+    unsafe {
+        (*GPIO).iput_async_en = (*GPIO).iput_async_en | generate_mask(p);
     }
- 
-    pub fn set_as_iof(p: u8, ) {
-        unsafe {
-            (*GPIO).iof_en = (*GPIO).iof_en | generate_mask(p);
-        }
-    }
+}
 
-    pub fn set_as_dio(p: u8) {
-        unsafe {
-            (*GPIO).iof_en = (*GPIO).iof_en & (! generate_mask(p));
-        }
+pub (crate) fn enable_outlet(p: u8) {
+    unsafe {
+        (*GPIO).oput_en  = (*GPIO).oput_en | generate_mask(p);
     }
+}
 
-    pub fn set_high( p: u8) {
-        unsafe {
-            (*GPIO).oput_val =  (*GPIO).oput_val  | generate_mask(p);
+pub (crate) fn set_as_iof(p: u8) {
+    unsafe {
+        (*GPIO).iof_en = (*GPIO).iof_en | generate_mask(p);
+    }
+}
+
+pub (crate) fn select_iof_func(p: u8, s: bool) {
+    unsafe {
+        if s == true {
+            (*GPIO).iof_sel = (*GPIO).iof_sel | generate_mask(p);
+        }
+        else {
+            (*GPIO).iof_sel = (*GPIO).iof_sel & (!generate_mask(p));
         }
     }
-  
-    pub fn set_low(p: u8) { 
-        unsafe {
-            (*GPIO).oput_val =  (*GPIO).oput_val & (! generate_mask(p)) ;
-        }
+}
+
+pub (crate) fn set_as_dio(p: u8) {
+    unsafe {
+        (*GPIO).iof_en = (*GPIO).iof_en & (! generate_mask(p));
     }
- 
+}
+
+pub (crate) fn set_high( p: u8) {
+    unsafe {
+        (*GPIO).oput_val =  (*GPIO).oput_val  | generate_mask(p);
+    }
+}
+
+pub (crate) fn set_low(p: u8) { 
+    unsafe {
+        (*GPIO).oput_val =  (*GPIO).oput_val & (! generate_mask(p)) ;
+    }
+}

@@ -95,4 +95,7 @@ impl DioPin {
             DioFuncMode::Mux => gpio::set_as_iof((*self).pin_num),
         }
     }
+    pub fn select_pin_iof_func(&self, s: bool){
+        gpio::select_iof_func((*self).pin_num, s);
+    }
 }
