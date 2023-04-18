@@ -8,3 +8,4 @@
 
 pub mod dio;
 pub mod serial;
+pub mod pmp;
