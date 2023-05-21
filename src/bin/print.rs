@@ -70,7 +70,9 @@ fn delay(v: u32)
 }
 
 #[no_mangle]
-//#[link_section = ".entry"]
+// Link section needed to pin it to a location
+// to boot from flash
+#[link_section = ".entry"]
 pub extern "C" fn _start() -> ! {
 
     set_stack();

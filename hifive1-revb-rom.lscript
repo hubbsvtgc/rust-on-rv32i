@@ -54,7 +54,7 @@ SECTIONS
 {
     .text :  /* GAS dont accept .code section */
     {
-        KEEP(*(.start_entry))
+        KEEP(*(.entry))
         KEEP(*(.mtvec_table))
         *(.text*)
     }
