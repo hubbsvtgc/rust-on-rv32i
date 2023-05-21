@@ -15,7 +15,7 @@ target = "riscv32imac-unknown-none-elf"
 #  - debuginfo=2 ( with debug info like -g flag)
 
 rustflags = [
-   "-C", "link-arg=-Thifive1-revb.lscript",
+   "-C", "link-arg=-Thifive1-revb-rom.lscript",
    "-C", "llvm-args=-align-all-functions=2",
    "-C", "debuginfo=2",
    "-C", "opt-level=0"
