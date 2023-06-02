@@ -6,6 +6,9 @@
 use core::panic::PanicInfo;
 use core::arch::asm;
 
+const STACK4K_RAMADDR: usize = 0x80001000;
+const FIXED_JUMPADDR: usize =  0x20000028;
+
 //const BLUE_LED_GPIO: dio::DioPinNum = 21;
 const PLIC_BASE: u32 = 0xC000000; // 0xC00 << 16 = 0xC00 0000,  
 const PLIC_CLAIMCOMP_CTX1_OFFSET: u32 = 0x200004;
@@ -14,6 +17,20 @@ const MIE_SET: u32 = 0;
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     loop{}
+}
+
+#[no_mangle]
+#[link_section = ".prestart"]
+fn prestart (){
+    unsafe {
+        asm!("nop");
+        asm!("mv t0, {}", in(reg) STACK4K_RAMADDR);
+        asm!("mv sp, t0");
+
+        asm!("mv t1, {}", in(reg) FIXED_JUMPADDR);
+        asm!("jr t1");
+        asm!("nop");
+    }
 }
 
 #[no_mangle]
@@ -86,11 +103,11 @@ pub extern "C" fn _start() -> ! {
 
         p.set_pin_outlet_high();
 
-        delay(0xfffff);
+        delay(0xffff);
 
         p.set_pin_outlet_low();
 
-        delay(0xfffff);
+        delay(0xffff);
 
     }
 }
