@@ -70,7 +70,7 @@ fn delay(v: u32)
 }
 
 #[no_mangle]
-//#[link_section = ".entry"]
+#[link_section = ".entry"]
 pub extern "C" fn _start() -> ! {
 
     set_stack();
