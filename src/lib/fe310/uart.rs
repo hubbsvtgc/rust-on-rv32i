@@ -1,6 +1,7 @@
 
 //!  Hifive1-RevB board Uart Interface
 use core::ptr; // for read/write volatile 
+use core::arch::asm;
 
 #[repr(C)]
 struct UartMmapRegs{
@@ -180,14 +181,14 @@ pub (crate) fn uart_do_send_byte ( instance: u8, b: u8) {
     match  instance {
         0 => {
             unsafe { 
-                while ((ptr::read_volatile(&(*UART0).txdata as *const u32) >> 31) == 1) { }
-                (*UART0).txdata = (ptr::read_volatile(&(*UART0).txdata as *const u32) & 0xFFFF_FFF0)| (b as u32);
+                while ((ptr::read_volatile(&(*UART0).txdata as *const u32) >> 31) == 1) { asm!("nop");}
+                (*UART0).txdata = (ptr::read_volatile(&(*UART0).txdata as *const u32) & 0xFFFF_FF00)| (b as u32);
             }
         }
         1 => {
             unsafe { 
-                while ((ptr::read_volatile(&(*UART1).txdata as *const u32) >> 31) == 1) {}
-                (*UART1).txdata =  (ptr::read_volatile(&(*UART1).txdata as *const u32) & 0xFFFF_FFF0) | (b as u32);
+                while ((ptr::read_volatile(&(*UART1).txdata as *const u32) >> 31) == 1) {asm!("nop");}
+                (*UART1).txdata =  (ptr::read_volatile(&(*UART1).txdata as *const u32) & 0xFFFF_FF00) | (b as u32);
             }
         }
         2_u8..=u8::MAX => panic!("Invalid Uart Instance")
