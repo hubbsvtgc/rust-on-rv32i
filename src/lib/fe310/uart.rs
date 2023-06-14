@@ -121,10 +121,19 @@ const UART0: *mut UartMmapRegs = 0x10013000 as *mut UartMmapRegs; // private to 
 const UART1: *mut UartMmapRegs = 0x10023000 as *mut UartMmapRegs; // private to this file
 
 pub (crate) fn uart_set_baud_divisor ( instance: u8, div: u32) {
+
     if instance == 0 {
-        unsafe { (*UART0).div = div; }
+        unsafe {
+            let r = &(*UART0).div as *const u32;
+            let w = r as *mut u32;
+            w.write_volatile(div);
+        }
     } else if instance == 1 {
-        unsafe { (*UART1).div = div; }
+        unsafe {
+            let r = &(*UART1).div as *const u32;
+            let w = r as *mut u32;
+            w.write_volatile(div);
+        }
     }
 }
 
@@ -135,20 +144,32 @@ pub (crate) fn uart_set_stopbits ( instance: u8, sbc: u8) {
     // | [31:19]  | [18:16]   |  [15:2]  |     1     |   0   |
     // ------------------------------------------------------
     match  instance {
-        0 =>{ if sbc == 1 {
-                unsafe { (*UART0).txctrl = (*UART0).txctrl & (0xFFFF_FFFD);}
-            } else if sbc == 2 {
-                unsafe { (*UART0).txctrl = (*UART0).txctrl | (0x2u32);}
-            } else {
-                panic!("Invalid stop bits count")
-            }
-        }
 
-        1 =>{ if sbc == 1 {
-                unsafe {(*UART1).txctrl = (*UART1).txctrl & (0xFFFF_FFFD);}
+        0 => unsafe {
+
+                let r = &(*UART0).txctrl as *const u32;
+                let w = r as *mut u32;
+
+                if sbc == 1 {
+                    w.write_volatile(r.read_volatile() & 0xFFFF_FFFD);
+                } else if sbc == 2 {
+                    w.write_volatile(r.read_volatile()| (0x2u32));
+                }
+                else {
+                    panic!("Invalid stop bits count")
+                }
+        }
+        1 => unsafe {
+
+            let r = &(*UART1).txctrl as *const u32;
+            let w = r as *mut u32;
+
+            if sbc == 1 {
+                w.write_volatile(r.read_volatile() & 0xFFFF_FFFD);
             } else if sbc == 2 {
-                    unsafe {(*UART1).txctrl = (*UART1).txctrl | (0x2u32);}
-            } else {
+                w.write_volatile(r.read_volatile()| (0x2u32));
+            }
+            else {
                 panic!("Invalid stop bits count")
             }
         }
@@ -164,8 +185,16 @@ pub (crate) fn uart_set_tx_fifo_depth ( instance: u8, depth: u8) {
     // | [31:19]  | [18:16]   |  [15:2]  |     1     |   0   |
     // -------------------------------------------------------
     match  instance {
-        0 => unsafe { (*UART0).txctrl = ((*UART0).txctrl & 0xFFF8_FFFF) | ((depth as u32) << 15);}
-        1 => unsafe { (*UART1).txctrl = ((*UART1).txctrl & 0xFFF8_FFFF) | ((depth as u32) << 15);}
+        0 => unsafe {
+            let r = &(*UART0).txctrl as *const u32;
+            let w = r as *mut u32;
+            w.write_volatile((r.read_volatile() & 0xFFF8_FFFF) | ((depth as u32) << 15));
+        }
+        1 => unsafe {
+            let r = &(*UART1).txctrl as *const u32;
+            let w = r as *mut u32;
+            w.write_volatile((r.read_volatile() & 0xFFF8_FFFF) | ((depth as u32) << 15));
+        }
         2_u8..=u8::MAX => panic!("Invalid Uart Instance")
     }
 }
@@ -179,16 +208,25 @@ pub (crate) fn uart_do_send_byte ( instance: u8, b: u8) {
     // --------------------------
 
     match  instance {
+
         0 => {
-            unsafe { 
-                while ((ptr::read_volatile(&(*UART0).txdata as *const u32) >> 31) == 1) { asm!("nop");}
-                (*UART0).txdata = (ptr::read_volatile(&(*UART0).txdata as *const u32) & 0xFFFF_FF00)| (b as u32);
+            unsafe {
+
+                let r = &(*UART0).txdata as *const u32;
+                let w = r as *mut u32;
+
+                while ((r.read_volatile() & 0x8000_0000 != 0)) { asm!("nop");}
+                w.write_volatile((ptr::read_volatile(r) & 0xFFFF_FF00)| (b as u32));
             }
         }
         1 => {
-            unsafe { 
-                while ((ptr::read_volatile(&(*UART1).txdata as *const u32) >> 31) == 1) {asm!("nop");}
-                (*UART1).txdata =  (ptr::read_volatile(&(*UART1).txdata as *const u32) & 0xFFFF_FF00) | (b as u32);
+            unsafe {
+
+                let r = &(*UART1).txdata as *const u32;
+                let w = r as *mut u32;
+
+                while ((r.read_volatile() & 0x8000_0000 != 0)) { asm!("nop");}
+                w.write_volatile((ptr::read_volatile(r) & 0xFFFF_FF00)| (b as u32));
             }
         }
         2_u8..=u8::MAX => panic!("Invalid Uart Instance")

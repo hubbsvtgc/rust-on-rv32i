@@ -6,7 +6,7 @@
 
 use core::panic::PanicInfo;
 use core::arch::asm;
-use crate::serial::{Configure, DoSendByte, EnableTx, DisableTx};
+use crate::serial::SerialTrait;
 
 const UART0_TX_GPIO17: u8 = 17; /* .equiv GPIO17, 17   --UART0 Tx */
 const PLIC_BASE: u32 = 0xC000000; // 0xC00 << 16 = 0xC00 0000,  
@@ -130,7 +130,7 @@ for i in 1..10 {
         uart.do_send_byte(*c);
     }
 }
-    delay(0xfff); // Delay to flush fifo before its disabled
+    delay(0xfffff); // Delay to flush fifo before its disabled
     uart.disable_tx();
     loop {}
 }

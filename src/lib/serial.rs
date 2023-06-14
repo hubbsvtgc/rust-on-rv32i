@@ -33,44 +33,29 @@ pub struct Uart {
     pub config: UartConfig,
 }
 
-pub trait Configure {
+pub trait SerialTrait {
     fn configure(&self) {}
-}
-
-pub trait EnableTx {
     fn enable_tx(&self) {}
-}
-
-pub trait DisableTx {
     fn disable_tx (&self) {}
-}
-
-pub trait DoSendByte {
     fn do_send_byte(&self, b: u8) {}
 }
 
-impl Configure for Uart {
+impl SerialTrait for Uart {
+
     fn configure(&self){
         uart::uart_set_baud_divisor((*self).instance, 138);
         uart::uart_set_stopbits ( (*self).instance, 1);
         uart::uart_set_tx_fifo_depth( (*self).instance, 7);
     }
-}
 
-
-impl DoSendByte for Uart {
     fn do_send_byte(&self, b: u8){
         uart::uart_do_send_byte ( (*self).instance, b);
     }
-}
 
-impl EnableTx for Uart {
     fn enable_tx (&self){
         uart::uart_enable_tx ( (*self).instance);
     }
-}
 
-impl DisableTx for Uart {
     fn disable_tx (&self){
         uart::uart_disable_tx ( (*self).instance);
     }
