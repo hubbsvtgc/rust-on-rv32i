@@ -7,6 +7,10 @@ const TRAP_CAUSE_INTR_BIT_MASk: u32 = 0x8000_0000;
 const INTRPT_EXCEP_CODE_MASK: u32 = 0x0000_000F;
 const HART0_MMODE_CLAIM: u32 =  0x0C20_0004;
 
+const MSTATUS_MIE: u32 = 0x8; /* Bit 3 - Machine Interrupt Enable */
+const MIE_MTIE: u32 = 0x80; /* Bit 7 - Machint Timer Interrupt */
+const MIE_MEIE: u32 = 0x800; /* Bit 11 - Machine External Interrupt */
+
 fn process_mexternal_interrupt()
 {
     unsafe{
@@ -36,6 +40,7 @@ fn process_mexternal_interrupt()
     }
 }
 
+#[no_mangle]
 pub fn m_trap_handler()
 {
     let mtrap_cause: u32;
@@ -116,5 +121,42 @@ pub fn m_trap_handler()
             }
             _ => { panic!("Rsvd trap cause") }
         }
+    }
+}
+
+pub fn enable_m_interrupt()
+{
+
+  /* Read MSTATUS csr and set bit 3
+  to enable machine interrupt */
+
+    unsafe {
+        asm!("csrr t0, mstatus");
+        asm!("li t1, 0x8");  /* MSTATUS_MIE: u32 = 0x8 */ 
+        asm!("or t0, t0, t1");
+        asm!("csrw mstatus, t0");
+    }
+}
+
+pub fn enable_m_external_interrupt()
+{
+
+        /* Read MIE csr and set bit 11 to enable external
+    * interrupt */
+
+    unsafe {
+        asm!("csrr t0, mie");
+        asm!("li t1, 0x800");  /* MIE_MEIE: u32 = 0x800;  */
+        asm!("or t0, t0, t1");
+        asm!("csrw mie, t0");
+    }
+}
+
+pub fn set_trap_handler()
+{
+
+    let th: mTrapHandlerFnPtr = m_trap_handler;
+    unsafe{
+        asm!("csrw mtvec, {}", in(reg) th);
     }
 }

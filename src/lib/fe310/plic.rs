@@ -91,7 +91,7 @@ pub fn plic_set_priority_threshold (pthreshold: PlicIntrPriorityLevels /* hart: 
     unsafe {
         let x = &(*FE310_PLIC_MMAP).Hart0MmodePriThreshold as *const u32;
         let y = x as *mut u32;
-        ptr::write_volatile(y, pthreshold as u32);
+        y.write_volatile(pthreshold as u32);
     }
 }
 
@@ -102,7 +102,9 @@ pub fn plic_enable_src_to_interrupt (src: PlicIntrSources) {
             unsafe {
                 let x = &(*FE310_PLIC_MMAP).Hart0MmodeIe1 as *const u32;
                 let y = x as *mut u32;
-                ptr::write_volatile(y, ptr::read_volatile(x) | PlicIntrSources::uart0 as u32);
+                let mut v: u32 = PlicIntrSources::uart0 as u32;
+                let v = 1 << v;
+                y.write_volatile(x.read_volatile() | v);
             }
         }
         other => { panic!("PANIC ###"); }
