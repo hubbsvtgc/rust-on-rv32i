@@ -262,3 +262,57 @@ pub (crate) fn uart_disable_tx ( instance: u8) {
         2_u8..=u8::MAX => panic!("Invalid Uart Instance")
     }
 }
+
+pub (crate) fn uart_enable_tx_wmark_interrupt  ( instance: u8) {
+
+    // ------------------------------------------------------------------
+    // | RESERVED | Rx WATERMARK INTR ENABLE | Tx WATERMARK INTR ENABLE | 
+    // ------------------------------------------------------------------
+    // | [31:2]   |         1                |            0             |
+    // -----------------------------------------------------------------
+
+    match  instance {
+        0 => unsafe {
+
+            let r = &(*UART0).ie as *const u32;
+            let w = r as *mut u32;
+
+            w.write_volatile( r.read_volatile() | 1u32);
+        }
+        1 => unsafe {
+
+            let r = &(*UART1).ie as *const u32;
+            let w = r as *mut u32;
+
+            w.write_volatile( r.read_volatile() | 1u32);
+        }
+        2_u8..=u8::MAX => panic!("Invalid Uart Instance")
+    }
+}
+
+pub (crate) fn uart_enable_rx_wmark_interrupt  ( instance: u8) {
+
+    // ------------------------------------------------------------------
+    // | RESERVED | Rx WATERMARK INTR ENABLE | Tx WATERMARK INTR ENABLE | 
+    // ------------------------------------------------------------------
+    // | [31:2]   |         1                |            0             |
+    // -----------------------------------------------------------------
+
+    match  instance {
+        0 => unsafe {
+
+            let r = &(*UART0).ie as *const u32;
+            let w = r as *mut u32;
+
+            w.write_volatile( r.read_volatile() | 2u32);
+        }
+        1 => unsafe {
+
+            let r = &(*UART1).ie as *const u32;
+            let w = r as *mut u32;
+
+            w.write_volatile( r.read_volatile() | 2u32);
+        }
+        2_u8..=u8::MAX => panic!("Invalid Uart Instance")
+    }
+}

@@ -38,6 +38,7 @@ pub trait SerialTrait {
     fn enable_tx(&self) {}
     fn disable_tx (&self) {}
     fn do_send_byte(&self, b: u8) {}
+    fn enable_tx_wmark_interrupt(&self) {}
 }
 
 impl SerialTrait for Uart {
@@ -58,5 +59,9 @@ impl SerialTrait for Uart {
 
     fn disable_tx (&self){
         uart::uart_disable_tx ( (*self).instance);
+    }
+
+    fn enable_tx_wmark_interrupt(&self){
+        uart::uart_enable_tx_wmark_interrupt ( (*self).instance);
     }
 }
