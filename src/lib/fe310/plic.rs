@@ -84,6 +84,7 @@ pub enum PlicIntrSources {
     pwm2c, // 50 
     pwm2d,
     i2c, // 52
+    all, //53
 }
 
 pub fn plic_set_priority_threshold (pthreshold: PlicIntrPriorityLevels /* hart: u8 */){
@@ -116,12 +117,30 @@ pub fn plic_set_intr_priority_for_src (src: PlicIntrSources, p: PlicIntrPriority
     match src {
         uart0 => {
             unsafe {
-                let ptr = &(*FE310_PLIC_MMAP).src_priority as *const u32;
+                let ptr = &(*FE310_PLIC_MMAP).src_priority[PlicIntrSources::uart0 as usize] as *const u32;
                 let y = ptr as *mut u32;
                 // *y.offset(PlicIntrSources::uart0 as isize) = p as u32;
-                ptr::write_volatile(y.offset(PlicIntrSources::uart0 as isize), p as u32);
+                //ptr::write_volatile(y.offset(PlicIntrSources::uart0 as isize), p as u32);
+                y.write_volatile(p as u32);
             }
         }
         other => { panic!("PANIC ###"); }
     }
 }
+
+pub fn plic_disable_src_to_interrupt (src: PlicIntrSources)
+{
+    match src {
+        all => unsafe {
+
+            let x = &(*FE310_PLIC_MMAP).Hart0MmodeIe1 as *const u32;
+            let y = x as *mut u32;
+            y.write_volatile(0);
+
+            let x = &(*FE310_PLIC_MMAP).Hart0MmodeIe2 as *const u32;
+            let y = x as *mut u32;
+            y.write_volatile(0);
+        }
+    }
+
+}   
