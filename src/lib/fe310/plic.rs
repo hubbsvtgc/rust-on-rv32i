@@ -20,15 +20,18 @@ struct PlicMemMap {
 
 const FE310_PLIC_MMAP: *mut PlicMemMap = 0x0C00_0000 as *mut PlicMemMap;
 
+/* This same is used for setting priority levels for interrupts
+ * and to set the threshold */
+ 
 pub enum PlicIntrPriorityLevels {
-    level0_dont_interrupt = 0,
-    level1_highest,
+    level0_lowest = 0, // Enable all interrupts with non zero priority
+    level1,
     level2,
     level3,
     level4,
     level5,
     level6,
-    level7_lowest,
+    level7_highest, // Masks all 
 }
 
 pub enum PlicIntrSources {

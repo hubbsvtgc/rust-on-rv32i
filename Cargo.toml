@@ -19,9 +19,9 @@ path = "src/lib/lib.rs"
 name = "led-blink"
 path = "src/bin/led-blink.rs"
 
-[[bin]]
-name = "print"
-path = "src/bin/print.rs"
+#[[bin]]
+#name = "print"
+#path = "src/bin/print.rs"
 
 [[bin]]
 name = "uart0interrupt"

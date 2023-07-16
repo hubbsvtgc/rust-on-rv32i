@@ -1,6 +1,7 @@
 
 use core::arch::asm;
 use core::ptr; // for read/write volatile 
+#[path = "uart.rs"] mod u;
 
 pub type mTrapHandlerFnPtr = fn();
 const TRAP_CAUSE_INTR_BIT_MASk: u32 = 0x8000_0000;
@@ -23,11 +24,29 @@ fn process_mexternal_interrupt()
                 let u0pend = u0pend_mmap_addr.read_volatile();
 
                 if u0pend as u32 & 0x1 == 1 {
-                    // Tx watermark interrupt 
+                    // Tx watermark interrupt
+                    static mut COUNT: usize = 0;
+
+                    /*NOTE; char in rust is NOT a byte, */
+                    let note: [u8; 21] = [ b'W', b'e', b'l', b'c', b'o', b'm', b'e',  b't', b'o', b'L', b'e',
+                    b'a', b'r', b'n', b'R', b'I', b'S', b'C', b'V', 10, 13];
+
+                    u::uart_do_send_byte(0, note[COUNT]);
+                    u::uart_do_send_byte(0, note[COUNT + 1]);
+                    u::uart_do_send_byte(0, note[COUNT + 2]);
+                    u::uart_do_send_byte(0, note[COUNT + 3]);
+                    u::uart_do_send_byte(0, note[COUNT + 4]);
+
+                    COUNT = COUNT + 5;
+
+                    if COUNT == 21 {
+                       COUNT = 0;
+                    }
+
                 } else if u0pend as u32 & 0x2 == 2 {
-                    // Rx watermark interrupt 
-                    let rcvd_count = 0x8001_0000 as *mut u32; // TDB: Based on ELF size 
-                    *rcvd_count = *rcvd_count + 1; // initialized at start 
+                    // Rx watermark interrupt
+                    let rcvd_count = 0x8001_0000 as *mut u32; // TDB: Based on ELF size
+                    *rcvd_count = *rcvd_count + 1; // initialized at start
 
                     let rcvd_curaddr = 0x8001_0004 as *mut u32;
                     *rcvd_curaddr = *rcvd_curaddr + 4;
@@ -50,7 +69,7 @@ pub fn m_trap_handler()
         asm!("csrr {}, mcause", out(reg) mtrap_cause);
     }
 
-    if  mtrap_cause >> 31 & TRAP_CAUSE_INTR_BIT_MASk != 0 {
+    if  mtrap_cause & TRAP_CAUSE_INTR_BIT_MASk != 0 {
         is_interrupt = true;
     }
 
@@ -76,6 +95,7 @@ pub fn m_trap_handler()
             }
             11=> {
                 // Machine External interrupt
+                process_mexternal_interrupt();
             }
             _ => {
                 panic!("Rsvd trap cause")

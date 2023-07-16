@@ -58,7 +58,6 @@ fn clear_external_interrupt()
     unsafe {
         asm!("csrr t0, mie");
         asm!("mv t1, {}", in(reg) MIE_SET);
-        //asm!("or t0, t0, t1"); - this enables the external interrupt
         asm!("csrw mie, t1");
     }
 }
@@ -117,19 +116,32 @@ pub extern "C" fn _start() -> ! {
 
     delay(0xffff);
     uart.enable_tx();
-        
+
+/*NOTE; char in rust is NOT a byte, */
+//let note: [u8; 21] = [ b'W', b'e', b'l', b'c', b'o', b'm', b'e',  b't', b'o', b'L', b'e',
+ //   b'a', b'r', b'n', b'R', b'I', b'S', b'C', b'V', 10, 13];
+
 //W e   l   c  o   m   e     t   o    L  e   a  r   n    R  I  S  C  V    LF CR  NULL
 //87,101,108,99,111,109,101, 116,111, 76,101,97,114,110, 82,73,83,67,86,  10,13, 00;
 
-/*NOTE; char in rust is NOT a byte, */
-let note: [u8; 21] = [ b'W', b'e', b'l', b'c', b'o', b'm', b'e',  b't', b'o', b'L', b'e',
-                       b'a', b'r', b'n', b'R', b'I', b'S', b'C', b'V', 10, 13];
+let note = b"bookisgoodtoreadformeright\n";
 
 for i in 1..10 {
     for c in note.iter() {
         uart.do_send_byte(*c);
     }
 }
+
+/* this block works
+let note: [u8; 21] = [ b'W', b'e', b'l', b'c', b'o', b'm', b'e',  b't', b'o', 
+                        b'W', b'e', b'l', b'c', b'o', b'm', b'e', b'S', b'C', b'V', 10, 13];
+
+for i in 1..10 {
+    for c in note.iter() {
+        uart.do_send_byte(*c);
+    }
+}
+*/
     delay(0xfffff); // Delay to flush fifo before its disabled
     uart.disable_tx();
     loop {}

@@ -34,7 +34,7 @@ fn delay(v: u32)
 
 #[no_mangle]
 #[link_section = ".prestart"]
-/*fn prestart (){
+fn prestart (){
     unsafe {
         asm!("nop");
         asm!("mv t0, {}", in(reg) STACK4K_RAMADDR);
@@ -44,7 +44,7 @@ fn delay(v: u32)
         asm!("jr t1");
         asm!("nop");
     }
-}*/
+}
 
 #[no_mangle]
 #[link_section = ".entry"]
@@ -53,6 +53,12 @@ pub extern "C" fn _start() -> ! {
     /* Set trap handler to mtvec */
 
     intr::set_trap_handler();
+
+    /* Enable machine & external interrupt */
+
+    intr::enable_m_interrupt();
+
+    intr::enable_m_external_interrupt();
 
     /* Disable all srcs to interrupt first */
     plic::plic_disable_src_to_interrupt(plic::PlicIntrSources::all);
@@ -89,12 +95,6 @@ pub extern "C" fn _start() -> ! {
 
     uart.configure();
     uart.enable_tx_wmark_interrupt();
-
-    /* Enable machine & external interrupt */
-
-    intr::enable_m_interrupt();
-
-    intr::enable_m_external_interrupt();
 
     delay(0xf);
     uart.enable_tx();

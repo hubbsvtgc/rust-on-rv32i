@@ -215,7 +215,11 @@ pub (crate) fn uart_do_send_byte ( instance: u8, b: u8) {
                 let r = &(*UART0).txdata as *const u32;
                 let w = r as *mut u32;
 
-                while ((r.read_volatile() & 0x8000_0000 != 0)) { asm!("nop");}
+                while ((r.read_volatile() & 0x8000_0000 != 0)) { 
+                    for i in 1..10 { /* delay if tx is busy */
+                        asm!("nop");
+                    }
+                    }
                 w.write_volatile((ptr::read_volatile(r) & 0xFFFF_FF00)| (b as u32));
             }
         }
