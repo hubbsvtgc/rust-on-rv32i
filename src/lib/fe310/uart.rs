@@ -217,12 +217,8 @@ pub (crate) fn uart_do_send_byte ( instance: u8, b: u8) {
                 let r = &(*UART0).txdata as *const u32;
                 let w = r as *mut u32;
 
-                while ((r.read_volatile() & 0x8000_0000 != 0)) { 
-                    for i in 1..10 { /* delay if tx is busy */
-                        asm!("nop");
-                    }
-                    }
-                w.write_volatile((ptr::read_volatile(r) & 0xFFFF_FF00)| (b as u32));
+                while ((r.read_volatile() & 0x8000_0000 != 0)) { asm!("nop");}
+                w.write_volatile((ptr::read_volatile(r) & 0xFFFF_FF00)| (b as u32 & 0x0000_00FF));
             }
         }
         1 => {
@@ -232,7 +228,7 @@ pub (crate) fn uart_do_send_byte ( instance: u8, b: u8) {
                 let w = r as *mut u32;
 
                 while ((r.read_volatile() & 0x8000_0000 != 0)) { asm!("nop");}
-                w.write_volatile((ptr::read_volatile(r) & 0xFFFF_FF00)| (b as u32));
+                w.write_volatile((ptr::read_volatile(r) & 0xFFFF_FF00)| (b as u32 & 0x0000_00FF));
             }
         }
         2_u8..=u8::MAX => panic!("Invalid Uart Instance")
@@ -408,6 +404,38 @@ pub (crate) fn poll_tx_busy ( instance: u8) -> bool {
                 }else {
                     return false;
                 }
+            }
+        }
+        2_u8..=u8::MAX => panic!("Invalid Uart Instance")
+    }
+}
+
+pub (crate) fn uart_send_byte ( instance: u8, b: u8) {
+
+    // --------------------------
+    // | FULL | RESERVED | DATA |
+    // --------------------------
+    // | 31   | [30: 8]  | [7:0]|
+    // --------------------------
+
+    match  instance {
+
+        0 => {
+            unsafe {
+
+                let r = &(*UART0).txdata as *const u32;
+                let w = r as *mut u32;
+                w.write_volatile((ptr::read_volatile(r) & 0xFFFF_FF00)| (b as u32 & 0x0000_00FF))
+                //w.write_volatile((b as u32) & (0x0000_00FF));
+            }
+        }
+        1 => {
+            unsafe {
+
+                let r = &(*UART1).txdata as *const u32;
+                let w = r as *mut u32;
+                w.write_volatile((ptr::read_volatile(r) & 0xFFFF_FF00)| (b as u32 & 0x0000_00FF))
+                //w.write_volatile((b as u32) & (0x0000_00FF));
             }
         }
         2_u8..=u8::MAX => panic!("Invalid Uart Instance")

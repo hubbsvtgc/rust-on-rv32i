@@ -117,18 +117,64 @@ pub extern "C" fn _start() -> ! {
     delay(0xffff);
     uart.enable_tx();
 
-/*NOTE; char in rust is NOT a byte, */
-//let note: [u8; 21] = [ b'W', b'e', b'l', b'c', b'o', b'm', b'e',  b't', b'o', b'L', b'e',
- //   b'a', b'r', b'n', b'R', b'I', b'S', b'C', b'V', 10, 13];
+/********************************
+*** send byte if NOT busy *******  
+*********************************/
 
-//W e   l   c  o   m   e     t   o    L  e   a  r   n    R  I  S  C  V    LF CR  NULL
-//87,101,108,99,111,109,101, 116,111, 76,101,97,114,110, 82,73,83,67,86,  10,13, 00;
+    let note = b"Passed!Prestart#Money$is\n";
 
-let note = b"bookisgoodtoreadformeright\n";
+    for i in 1..10 {
+        for c in note.iter() {
+            while (uart.poll_tx_busy()){
+                delay(0xfff);
+            }
+            uart.do_send_byte(*c);
+        }
+    }
+
+    let endnote = b"*******************\n";
+
+    for c in endnote.iter() {
+        while (uart.poll_tx_busy()){
+            delay(0xfff);
+        }
+        uart.do_send_byte(*c);
+    }
+
+
+    delay(0xfffff);
+/*************************************
+*** send atomic and then check *******  
+**************************************/
 
 for i in 1..10 {
     for c in note.iter() {
-        uart.do_send_byte(*c);
+        while uart.atomic_send_byte(*c) != true
+        {
+            delay(0xfff);
+        }
+    }
+}
+
+
+// print end line
+
+for c in endnote.iter() {
+    while (uart.poll_tx_busy()){
+        delay(0xfff);
+    }
+    uart.do_send_byte(*c);
+}
+
+delay(0xfffff);
+
+/*************************************
+*** send and forget ******************  
+**************************************/
+
+for i in 1..10 {
+    for c in note.iter() {
+        uart.send_byte(*c);
     }
 }
 
