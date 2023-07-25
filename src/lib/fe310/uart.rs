@@ -375,3 +375,41 @@ pub (crate) fn uart_atomic_send_byte ( instance: u8, b: u8) -> bool {
         2_u8..=u8::MAX => panic!("Invalid Uart Instance")
     }
 }
+
+pub (crate) fn poll_tx_busy ( instance: u8) -> bool {
+
+    // --------------------------
+    // | FULL | RESERVED | DATA |
+    // --------------------------
+    // | 31   | [30: 8]  | [7:0]|
+    // --------------------------
+
+    match  instance {
+
+        0 => {
+            unsafe {
+
+                let r = &(*UART0).txdata as *const u32;
+
+                if ((r.read_volatile() & 0x8000_0000) != 0) {
+                     return true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        1 => {
+            unsafe {
+
+                let r = &(*UART1).txdata as *const u32;
+
+                if ((r.read_volatile() & 0x8000_0000) != 0){
+                    return true;
+                }else {
+                    return false;
+                }
+            }
+        }
+        2_u8..=u8::MAX => panic!("Invalid Uart Instance")
+    }
+}

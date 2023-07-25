@@ -40,6 +40,7 @@ pub trait SerialTrait {
     fn do_send_byte(&self, b: u8) {}
     fn enable_tx_wmark_interrupt(&self) {}
     fn atomic_send_byte ( &self, b: u8) -> bool;
+    fn poll_tx_busy(&self) -> bool;
 }
 
 impl SerialTrait for Uart {
@@ -68,5 +69,9 @@ impl SerialTrait for Uart {
 
     fn atomic_send_byte(&self, b:u8 ) -> bool {
         return uart::uart_atomic_send_byte ( (*self).instance, b);
+    }
+
+    fn poll_tx_busy(&self) -> bool {
+        return uart::poll_tx_busy ( (*self).instance);
     }
 }
