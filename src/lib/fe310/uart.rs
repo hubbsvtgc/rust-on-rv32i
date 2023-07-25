@@ -342,7 +342,7 @@ pub (crate) fn uart_atomic_send_byte ( instance: u8, b: u8) -> bool {
                 asm!("mv t1, {}", in(reg) sval);
                 asm!("amoor.w t2, t1, (t0)");
 
-                asm!("mv t1, {}", out(reg) outdata);
+                asm!("mv t2, {}", out(reg) outdata);
                 if (outdata & 0x8000_0000 != 0)
                 {
                     return false
