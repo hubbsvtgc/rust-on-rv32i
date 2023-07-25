@@ -125,7 +125,8 @@ pub extern "C" fn _start() -> ! {
 
     for i in 1..10 {
         for c in note.iter() {
-            while (uart.poll_tx_busy()){
+            
+           while (uart.poll_tx_busy()){
                 delay(0xfff);
             }
             uart.do_send_byte(*c);
@@ -141,11 +142,10 @@ pub extern "C" fn _start() -> ! {
         uart.do_send_byte(*c);
     }
 
-
-    delay(0xfffff);
+    delay(0xfff);
 /*************************************
 *** send atomic and then check *******  
-**************************************/
+*************************************
 
 for i in 1..10 {
     for c in note.iter() {
@@ -165,30 +165,21 @@ for c in endnote.iter() {
     }
     uart.do_send_byte(*c);
 }
-
-delay(0xfffff);
+*/
+delay(0xfff);
 
 /*************************************
 *** send and forget ******************  
-**************************************/
+*************************************
 
 for i in 1..10 {
     for c in note.iter() {
         uart.send_byte(*c);
     }
 }
-
-/* this block works
-let note: [u8; 21] = [ b'W', b'e', b'l', b'c', b'o', b'm', b'e',  b't', b'o', 
-                        b'W', b'e', b'l', b'c', b'o', b'm', b'e', b'S', b'C', b'V', 10, 13];
-
-for i in 1..10 {
-    for c in note.iter() {
-        uart.do_send_byte(*c);
-    }
-}
 */
-    delay(0xfffff); // Delay to flush fifo before its disabled
+
+    delay(0xffff); // Delay to flush fifo before its disabled
     uart.disable_tx();
     loop {}
 }
