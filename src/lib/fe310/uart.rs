@@ -3,6 +3,8 @@
 use core::ptr; // for read/write volatile 
 use core::arch::asm;
 
+const UART0_TX_DATA_ADDR: usize = 0x10013000;
+
 #[repr(C)]
 struct UartMmapRegs{
 
@@ -316,6 +318,59 @@ pub (crate) fn uart_enable_rx_wmark_interrupt  ( instance: u8) {
             let w = r as *mut u32;
 
             w.write_volatile( r.read_volatile() | 2u32);
+        }
+        2_u8..=u8::MAX => panic!("Invalid Uart Instance")
+    }
+}
+
+pub (crate) fn uart_atomic_send_byte ( instance: u8, b: u8) -> bool {
+
+    // --------------------------
+    // | FULL | RESERVED | DATA |
+    // --------------------------
+    // | 31   | [30: 8]  | [7:0]|
+    // --------------------------
+
+    /* amoor.w rd, rs2, (rs1)
+    *
+    */
+
+    let mut outdata: u32 = 0;
+    let sval: u32 = (b as u32) & 0x0000_00FF;
+
+    match  instance {
+
+        0 => {
+            unsafe {
+                asm!("mv t0, {}", in(reg) UART0_TX_DATA_ADDR);
+                asm!("mv t1, {}", in(reg) sval);
+                asm!("amoor.w t2, t1, (t0)");
+
+                asm!("mv t1, {}", out(reg) outdata);
+                if (outdata & 0x8000_0000 != 0)
+                {
+                    return false
+                }
+                else {
+                    return true
+                }
+            }
+        }
+        1 => {
+            unsafe {
+                asm!("mv t0, {}", in(reg) UART0_TX_DATA_ADDR);
+                asm!("mv t1, {}", in(reg) sval);
+                asm!("amoor.w t2, t1, (t0)");
+
+                asm!("mv t2, {}", out(reg) outdata);
+                if (outdata & 0x8000_0000 != 0)
+                {
+                    return false
+                }
+                else {
+                    return true
+                }
+            }
         }
         2_u8..=u8::MAX => panic!("Invalid Uart Instance")
     }

@@ -39,6 +39,7 @@ pub trait SerialTrait {
     fn disable_tx (&self) {}
     fn do_send_byte(&self, b: u8) {}
     fn enable_tx_wmark_interrupt(&self) {}
+    fn atomic_send_byte ( &self, b: u8) -> bool;
 }
 
 impl SerialTrait for Uart {
@@ -63,5 +64,9 @@ impl SerialTrait for Uart {
 
     fn enable_tx_wmark_interrupt(&self){
         uart::uart_enable_tx_wmark_interrupt ( (*self).instance);
+    }
+
+    fn atomic_send_byte(&self, b:u8 ) -> bool {
+        return uart::uart_atomic_send_byte ( (*self).instance, b);
     }
 }
