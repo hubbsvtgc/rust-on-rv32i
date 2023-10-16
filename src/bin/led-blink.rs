@@ -2,6 +2,7 @@
 #![no_main]
 
 #[path = "../lib/dio.rs"] mod dio;
+#[path = "../lib/rtc.rs"] mod rtc;
 
 use core::panic::PanicInfo;
 use core::arch::asm;
@@ -86,6 +87,41 @@ fn delay(v: u32)
 
 #[no_mangle]
 #[link_section = ".entry"]
+#[cfg(feature="rtc")]
+pub extern "C" fn _start() -> ! {
+
+    set_stack();
+    set_trap_handler();
+    clear_external_interrupt();
+
+    let date = rtc::RtcDate{ year: 2023, month: rtc::RtcMonths::October, week: 40, day: 2};
+    let time = rtc::RtcTime{ hours: 6, mins: 27, secs: 0};
+    let mut r = rtc::Rtc::init();
+    r.set_date(date);
+    r.set_time(time);
+    r.enable();
+
+    let p = dio::DioPin {instance: 0, port: 0, pin_num: 21};
+    let mode = dio::DioFuncMode::Gpio;
+    p.setup_pin();
+    p.enable_pin_outlet();
+    p.set_pin_func_mode(&mode);
+
+    loop{
+
+        p.set_pin_outlet_high();
+
+        r.wait_in_secs(2);
+
+        p.set_pin_outlet_low();
+
+        r.wait_in_secs(10);
+    }
+}
+
+#[no_mangle]
+#[link_section = ".entry"]
+#[cfg(not(feature="rtc"))]
 pub extern "C" fn _start() -> ! {
 
     set_stack();
@@ -94,7 +130,6 @@ pub extern "C" fn _start() -> ! {
 
     let p = dio::DioPin {instance: 0, port: 0, pin_num: 21};
     let mode = dio::DioFuncMode::Gpio;
-
     p.setup_pin();
     p.enable_pin_outlet();
     p.set_pin_func_mode(&mode);
@@ -108,6 +143,5 @@ pub extern "C" fn _start() -> ! {
         p.set_pin_outlet_low();
 
         delay(0xffff);
-
     }
 }

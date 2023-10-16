@@ -23,8 +23,11 @@ path = "src/bin/led-blink.rs"
 #name = "print"
 #path = "src/bin/print.rs"
 
-[[bin]]
-name = "uart0interrupt"
-path = "src/bin/UartInterrupt.rs"
+#[[bin]]
+#name = "uart0interrupt"
+#path = "src/bin/UartInterrupt.rs"
 
 [dependencies]
+
+[features]
+rtc = [] # cargo build --features=rtc

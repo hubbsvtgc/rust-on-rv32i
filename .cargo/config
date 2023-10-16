@@ -20,5 +20,5 @@ rustflags = [
    "-C", "llvm-args=-align-all-functions=2",
    "-C", "debuginfo=2",
    "-C", "opt-level=0",
-    "-C", "target-feature=-c"
+    "-C", "target-feature=-c" # No Compressed instructions
 ]
